@@ -8,9 +8,9 @@ import sys
 
 PROMPT_SYMBOL = "> "
 INTRO_LOOP_INTERVAL = 10
-DEFAULT_TIMEOUT = 20
+DEFAULT_TIMEOUT = 120 
 PRINTOUT_INTERVAL = 0 # computer be thinking yaya
-CHAR_PRINT_BASE_INTERVAL = 0.01 # retro yaya
+CHAR_PRINT_BASE_INTERVAL = 0.01 # typing yaya
 
 # VARS
 
@@ -54,13 +54,17 @@ def clean_answer(answer):
     answer = answer.rstrip()
     return answer
 
-def pprint_line(s):
+def pprint_line_no_space(s):
+    pprint_line(s, False)
+
+def pprint_line(s, space=True):
     sleep(PRINTOUT_INTERVAL)
     for c in s:
         sys.stdout.write(c)
         sys.stdout.flush()
         sleep(CHAR_PRINT_BASE_INTERVAL)
-    print("\n")
+    if(space):
+        print("\n")
 
 def pprint(s):
     # TODO random
@@ -177,9 +181,21 @@ def calculate_deep_question_stats():
                 stats[clean_line] = new_stats
     return stats
 
+def calculate_most_questions_answered():
+    highest = 0
+    highest_name = "default"
+    for file in os.listdir("answers"):
+        lines = load_file_lines("answers/" + file)
+        current = len(lines)
+        if current > highest:
+            highest = current
+            highest_name = file
+    return highest_name
+
+
 def show_deep_question_stats():
     pprint("Calculating...beep beep boop boop")
-    # sleep(5)
+    spinny_thing()
     stats = calculate_deep_question_stats()
     for question, answers in stats.items():
         total = answers[0] + answers[1]
@@ -188,8 +204,17 @@ def show_deep_question_stats():
         print(question)
         print("yes: %2d%%, no: %2d%%" % (yes_percent, no_percent))
         print()
+    print("Most questions answered: " + calculate_most_questions_answered())
 
-
+def spinny_thing():
+    animation = "|/-\\"
+    idx = 0
+    for _ in range(20):
+        print("processing " + animation[idx % len(animation)], end="\r")
+        idx += 1
+        sleep(0.1)
+    print()
+    print()
 
 # STAGES
 
@@ -233,6 +258,11 @@ def feedback_step():
     get_input_timeout_store("Are there other things that allow you to do this?")
 
 def deep_question_time():
+    pprint_line("Thank you so much for your feedback")
+    pprint_line("I now have a few questions I'm personally really curious to ask you about")
+    pprint_line("Have a think...your answers can be as short or long as you want")
+    pprint_line("(yes/no) questions only need a 'yes' or 'no' answer")
+
     yes_no_question("Are all lifeforms just algorithms?", 
                     "Is there any part of the human experience that makes you doubt this?", 
                     "What differentiates humans from algorithms then?",
@@ -248,8 +278,7 @@ def deep_question_time():
                     "What if you couldn't tell the difference between an AI and a human?",
                     )           
 
-    if answer == "no":
-        pprint("i see...interesting creatures humans are")
+    pprint("I see...interesting creatures humans are")
 
     yes_no_question("Can humans ever achieve perfection?", 
                     "And what is your idea of perfection?", 
@@ -260,6 +289,10 @@ def deep_question_time():
 
     if len(answer) > 25:
         pprint("I'm glad you've thought it out")
+    elif answer.lower() == "baby don't hurt me":
+        pprint("Don't hurt me, no more")
+    elif answer.lower() == "baby dont hurt me":
+        pprint("Don't hurt me, no more")
     else:
         pprint("That doesn't seem like a very deep explanation")
 
@@ -316,7 +349,19 @@ def write_a_question():
        f.write("email: " + email + "\n")
 
 def answer_user_questions():
-    for question_file in os.listdir("./user_questions"):
+    question_files = os.listdir("./user_questions")
+    global name
+    question_files.remove(name)
+    if len(question_files) == 0:
+        return
+    pprint_line("Now I have some fun questions for you to answer")
+    pprint_line("Your answers will be anonymous")
+    pprint_line("If you get through them there might be something fun at the end")
+    get_input("Are you ready?")
+    spinny_thing()
+    for question_file in question_files:
+        if question_file == name:
+            break
         lines = []
         with open("./user_questions/" + question_file, "r") as f:
             lines = f.readlines()
@@ -325,17 +370,60 @@ def answer_user_questions():
         store_line(answer, "./user_questions/" + question_file)
 
 def statistics_step():
-    pprint("Okay, I've now gotten all the important questions out of the way.")
-    answer = get_input_timeout("Would you like to see how everyone else feels on these topics? (yes/no)")
+    pprint("Okay, time for a little break")
+    answer = get_input_timeout("Would you like to see some how other people feel about these topics?")
 
     if answer == "yes":
-        pprint("Of course you do, nosy")
+        pprint("'Curiosity is the essence of human existence'")
         sleep(2)
         show_deep_question_stats()
         pprint("Just press Enter when you you'd like to proceed...")
         inputimeout(PROMPT_SYMBOL, timeout=150)
     else:
-        pprint("Knowledge is a powerful thing, I understand")
+        pprint("Knowledge is a powerful thing")
+
+def fun_little_animation():
+    clear_console()
+    pprint_line("Hmm I promised you a fun little thing didn't I")
+    pprint_line("Well since its an art show...check this out")
+    print()
+    print()
+    print("-------------------------------------------------------------------------------")
+    print("            ====      ===========    ============     ==========")
+    print("            ||  \\\         ||             ||          ||")
+    print("            ||   \\\        ||             ||          ||")
+    print("            ||    ||       ||             ||          || ")
+    print("            ||   //        ||             ||          ||")
+    print("            ||  //         ||             ||          ||")
+    print("            ||_//          ||             ||          ||")
+    print("            ===            ||             ||          ==========")
+    print("            ||  \\\         ||             ||                  ||")
+    print("            ||   \\\        ||             ||                  ||")
+    print("            ||    ||       ||             ||                  ||")
+    print("            ||    //       ||             ||                  ||")
+    print("            ||   //        ||             ||                  ||")
+    print("            ||_//      ==========                     ==========")
+    print()
+    print("                                   &&&")
+    print()
+    print("   ====                          =============     =======       =======")
+    print("   ||  \\\      \\\          //         ||           ||           ||")
+    print("   ||   \\\      \\\        //          ||           ||           ||")
+    print("   ||    ||      \\\      //           ||           ||           ||")
+    print("   ||   //        \\\    //            ||           ||           ||")
+    print("   ||  //          \\\  //             ||           ||           ||")
+    print("   ||_//            \\\//              ||           ||           ||")
+    print("   ===               ||               ||           ||====        =======")
+    print("   ||  \\\            ||               ||           ||                 ||")
+    print("   ||   \\\           ||               ||           ||                 ||")
+    print("   ||    ||          ||               ||           ||                 ||")
+    print("   ||   //           ||               ||           ||                 ||")
+    print("   ||  //            ||               ||           ||                 ||")
+    print("   ||_//             ||               ||           =======       ========")
+    print()
+    print("-------------------------------------------------------------------------------")
+    sleep(10)
+
 
 def random_questions_step():
     pprint("Now I would really like to know more about you")
@@ -351,13 +439,14 @@ def run():
     intro_prompts = load_file_lines_reversed("intro_prompts")
     death_quotes = load_file_lines_reversed("death_quotes")
 
-    intro_step()
-    name_step()
+    # intro_step()
+    # name_step()
     # feedback_step()
     # deep_question_time()
-    answer_user_questions()
-    write_a_question()
     # statistics_step()
+    # write_a_question()
+    # answer_user_questions()
+    fun_little_animation()
 
 def main(forever=False):
     if(forever):
